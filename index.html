@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="VitaTrack" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.svg" />
+  <title>VitaTrack</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg2: #f5f5f4;
+      --bg3: #efefed;
+      --text: #1a1a1a;
+      --text2: #6b7280;
+      --text3: #9ca3af;
+      --border: rgba(0,0,0,0.1);
+      --border2: rgba(0,0,0,0.18);
+      --green: #1D9E75;
+      --green-bg: #EAF3DE;
+      --green-text: #27500A;
+      --amber: #EF9F27;
+      --amber-bg: #FAEEDA;
+      --amber-text: #633806;
+      --red: #E24B4A;
+      --red-bg: #FCEBEB;
+      --red-text: #791F1F;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111110;
+        --bg2: #1a1a18;
+        --bg3: #222220;
+        --text: #f0efec;
+        --text2: #9ca3af;
+        --text3: #6b7280;
+        --border: rgba(255,255,255,0.1);
+        --border2: rgba(255,255,255,0.18);
+        --green-bg: #0d2b1a;
+        --green-text: #86efac;
+        --amber-bg: #2a1f08;
+        --amber-text: #fcd34d;
+        --red-bg: #2a0f0f;
+        --red-text: #fca5a5;
+      }
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--bg2);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      color: var(--text);
+      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior: none;
+    }
+
+    #app {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100vh;
+      background: var(--bg2);
+      position: relative;
+    }
+
+    /* HEADER */
+    .header {
+      background: var(--bg);
+      border-bottom: 0.5px solid var(--border);
+      padding: calc(14px + var(--safe-top)) 20px 12px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+    }
+    .app-name { font-size: 17px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; }
+    .app-date { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+    /* TABS */
+    .tabs {
+      background: var(--bg);
+      border-bottom: 0.5px solid var(--border);
+      display: flex;
+      position: sticky;
+      top: 55px;
+      z-index: 19;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 11px 4px;
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text2);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: color 0.15s;
+      font-family: inherit;
+    }
+    .tab-btn.active {
+      font-weight: 600;
+      color: var(--text);
+      border-bottom-color: var(--text);
+    }
+
+    /* PAGE */
+    .page { padding: 16px 14px calc(24px + var(--safe-bottom)); }
+
+    /* CARDS */
+    .card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+    .metric-card {
+      background: var(--bg2);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+    }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+
+    /* TYPOGRAPHY */
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 8px;
+    }
+    .big-num {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+      margin: 4px 0 2px;
+      font-variant-numeric: tabular-nums;
+    }
+    .small-label { font-size: 12px; color: var(--text2); }
+
+    /* BUTTONS */
+    .btn-primary {
+      width: 100%;
+      padding: 15px;
+      border-radius: var(--radius-sm);
+      font-size: 15px;
+      font-weight: 600;
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      cursor: pointer;
+      margin-bottom: 8px;
+      font-family: inherit;
+      transition: opacity 0.1s;
+      -webkit-user-select: none;
+    }
+    .btn-primary:active { opacity: 0.75; }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 500;
+      background: var(--bg);
+      color: var(--text);
+      border: 0.5px solid var(--border2);
+      cursor: pointer;
+      margin-bottom: 8px;
+      font-family: inherit;
+      transition: opacity 0.1s;
+      -webkit-user-select: none;
+    }
+    .btn-secondary:active { opacity: 0.65; }
+
+    .btn-sm {
+      padding: 15px 22px;
+      border-radius: var(--radius-sm);
+      font-size: 20px;
+      font-weight: 500;
+      background: var(--bg);
+      color: var(--text);
+      border: 0.5px solid var(--border2);
+      cursor: pointer;
+      font-family: inherit;
+      transition: opacity 0.1s;
+    }
+    .btn-sm:active { opacity: 0.65; }
+
+    /* BADGE */
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 6px;
+    }
+    .badge-green { background: var(--green-bg); color: var(--green-text); }
+    .badge-amber { background: var(--amber-bg); color: var(--amber-text); }
+    .badge-red   { background: var(--red-bg);   color: var(--red-text); }
+    .badge-gray  { background: var(--bg3); color: var(--text2); }
+
+    /* PROGRESS BAR */
+    .progress-wrap {
+      height: 8px;
+      border-radius: 4px;
+      background: var(--bg3);
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.35s ease;
+    }
+
+    /* EXERCISE LIST */
+    .ex-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 10px 0;
+      border-bottom: 0.5px solid var(--border);
+      gap: 12px;
+    }
+    .ex-row:last-child { border-bottom: none; }
+    .ex-name { font-size: 14px; font-weight: 500; color: var(--text); flex-shrink: 0; }
+    .ex-detail { font-size: 12px; color: var(--text2); font-variant-numeric: tabular-nums; text-align: right; }
+
+    /* BAR CHART */
+    .bar-chart { display: flex; gap: 6px; align-items: flex-end; height: 64px; }
+    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .bar { width: 100%; border-radius: 3px; min-height: 4px; }
+    .bar-label { font-size: 10px; color: var(--text2); }
+
+    /* PLAN ROWS */
+    .plan-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .plan-row:last-child { border-bottom: none; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 6px; }
+
+    .tip-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .tip-row:last-child { border-bottom: none; }
+
+    /* CRAVING ROW */
+    .craving-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .craving-row:last-of-type { border-bottom: none; }
+
+    /* DONE BANNER */
+    .done-banner {
+      background: var(--green-bg);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      text-align: center;
+      color: var(--green-text);
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    /* MODAL OVERLAY */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: flex-end;
+      z-index: 50;
+    }
+    .modal {
+      width: 100%;
+      max-width: 480px;
+      margin: 0 auto;
+      background: var(--bg);
+      border-radius: 16px 16px 0 0;
+      padding: 22px 18px calc(36px + var(--safe-bottom));
+    }
+
+    /* INSTALL BANNER */
+    .install-banner {
+      background: var(--green-bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .install-banner p { font-size: 13px; color: var(--green-text); line-height: 1.4; }
+    .install-banner button { font-size: 12px; font-weight: 600; background: var(--green-text); color: var(--bg); border: none; padding: 7px 12px; border-radius: 6px; cursor: pointer; font-family: inherit; flex-shrink: 0; }
+
+    /* RESET CONFIRM */
+    .reset-confirm { background: var(--red-bg); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 10px; }
+    .reset-confirm p { font-size: 13px; color: var(--red-text); margin-bottom: 10px; }
+    .reset-confirm-btns { display: flex; gap: 8px; }
+    .reset-confirm-btns button { flex: 1; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; }
+    .btn-cancel { background: var(--bg); color: var(--text); border: 0.5px solid var(--border2); }
+    .btn-danger { background: var(--red); color: #fff; border: none; }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <div class="header">
+    <div class="app-name">VitaTrack</div>
+    <div class="app-date" id="header-date"></div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="dash" onclick="switchTab('dash')">Tableau de bord</button>
+    <button class="tab-btn" data-tab="clope" onclick="switchTab('clope')">Cigarettes</button>
+    <button class="tab-btn" data-tab="sport" onclick="switchTab('sport')">Sport</button>
+  </div>
+  <div id="page-content"></div>
+  <div id="modal-root"></div>
+</div>
+
+<script>
+// ─── CONSTANTS ───────────────────────────────────────────────
+const STORAGE_KEY = "vitatrack_v1";
+const CIG_PRICE   = 0.60;
+const INIT_DAILY  = 16;
+
+const CRAVING_TIPS = [
+  "Fais 20 pompes maintenant",
+  "Bois un grand verre d'eau froide",
+  "Marche dehors 5 minutes",
+  "Respiration 4-7-8 : inspire 4s, retiens 7s, expire 8s",
+  "Mâche un chewing-gum",
+  "Attends 5 min — l'envie passe toujours",
+];
+
+const SESSIONS = {
+  0: [
+    { id:"walk20", name:"Marche active", time:"20–25 min",
+      exercises:[{e:"Marche rapide",d:"20 minutes à bonne allure"},{e:"Étirements",d:"5 minutes"}] },
+    { id:"body1",  name:"Force débutant", time:"15 min",
+      exercises:[{e:"Pompes (genoux)",d:"3 × 8 répétitions"},{e:"Squats",d:"3 × 10 répétitions"},{e:"Gainage",d:"3 × 20 secondes"}] },
+    { id:"walk30", name:"Marche longue", time:"30 min",
+      exercises:[{e:"Marche rapide",d:"30 minutes non-stop"}] },
+  ],
+  2: [
+    { id:"runwalk", name:"Run / Marche", time:"25 min",
+      exercises:[{e:"Intervalles",d:"1 min course / 2 min marche × 8"},{e:"Étirements",d:"5 min"}] },
+    { id:"body2",   name:"Force intermédiaire", time:"20 min",
+      exercises:[{e:"Pompes normales",d:"3 × 10 répétitions"},{e:"Squats sautés",d:"3 × 8 répétitions"},{e:"Gainage",d:"3 × 30 secondes"},{e:"Fentes",d:"3 × 8 par jambe"}] },
+  ],
+  4: [
+    { id:"jog20", name:"Jogging", time:"20 min",
+      exercises:[{e:"Course continue",d:"20 min sans s'arrêter"},{e:"Étirements",d:"10 min"}] },
+    { id:"body3",  name:"Circuit complet", time:"25 min",
+      exercises:[{e:"Pompes",d:"4 × 15 répétitions"},{e:"Tractions assistées",d:"3 × 5 répétitions"},{e:"Squat pistol assisté",d:"3 × 6 par jambe"},{e:"Gainage dynamique",d:"3 × 45 secondes"},{e:"Burpees",d:"3 × 8 répétitions"}] },
+    { id:"hiit",   name:"HIIT débutant", time:"20 min",
+      exercises:[{e:"Circuit",d:"30s effort / 30s repos × 10"},{e:"Exercices",d:"squats, pompes, gainage, jumping jacks"}] },
+  ],
+};
+
+// ─── HELPERS ─────────────────────────────────────────────────
+function todayKey()         { return new Date().toISOString().slice(0,10); }
+function weeksSince(start)  { return Math.max(0, Math.floor((Date.now()-new Date(start))/(7*24*3600*1000))); }
+function getDailyGoal(w)    { return Math.max(1, 14-Math.floor(w/2)*2); }
+function getSessionsForWeek(w) { return w>=4?SESSIONS[4]:w>=2?SESSIONS[2]:SESSIONS[0]; }
+function getTodaySession(w) { const s=getSessionsForWeek(w); return s[new Date().getDay()%s.length]; }
+
+function fmtDate() {
+  return new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+}
+
+// ─── STORAGE ─────────────────────────────────────────────────
+function loadData() {
+  try { const s=localStorage.getItem(STORAGE_KEY); if(s) return JSON.parse(s); } catch{}
+  return { startDate: todayKey(), days: {} };
+}
+function saveData(d) { try { localStorage.setItem(STORAGE_KEY,JSON.stringify(d)); } catch{} }
+
+// ─── STATE ───────────────────────────────────────────────────
+let state = loadData();
+let currentTab = "dash";
+let deferredInstall = null;
+
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault();
+  deferredInstall = e;
+  render();
+});
+
+// ─── ACTIONS ─────────────────────────────────────────────────
+function today()       { return state.days[todayKey()] || { cigs:0, sport:false }; }
+
+function mutateToday(patch) {
+  const k = todayKey();
+  state.days[k] = { cigs:0, sport:false, ...state.days[k], ...patch };
+  saveData(state);
+  render();
+}
+
+function addCig()    { const td=today(); mutateToday({cigs:td.cigs+1}); }
+function removeCig() { const td=today(); if(td.cigs>0) mutateToday({cigs:td.cigs-1}); }
+function markSport() { mutateToday({sport:true}); }
+
+function switchTab(t) {
+  currentTab = t;
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab===t));
+  render();
+}
+
+function installApp() {
+  if (!deferredInstall) return;
+  deferredInstall.prompt();
+  deferredInstall.userChoice.then(() => { deferredInstall=null; render(); });
+}
+
+let showReset = false;
+function confirmReset() { showReset=true; render(); }
+function cancelReset()  { showReset=false; render(); }
+function doReset() {
+  state = { startDate: todayKey(), days: {} };
+  saveData(state);
+  showReset = false;
+  render();
+}
+
+// ─── STATS ───────────────────────────────────────────────────
+function getStreak() {
+  let s=0;
+  for (const k of Object.keys(state.days).sort().reverse()) {
+    const w=Math.max(0,Math.floor((new Date(k)-new Date(state.startDate))/(7*24*3600*1000)));
+    if ((state.days[k].cigs||0)<=getDailyGoal(w)) s++;
+    else break;
+  }
+  return s;
+}
+
+function getMoneySaved() {
+  const total=Object.values(state.days).reduce((a,d)=>a+Math.max(0,INIT_DAILY-(d.cigs||0)),0);
+  return (total*CIG_PRICE).toFixed(2);
+}
+
+function getLast7() {
+  return Array.from({length:7},(_,i)=>{
+    const d=new Date(); d.setDate(d.getDate()-(6-i));
+    const k=d.toISOString().slice(0,10);
+    return {k, label:["D","L","Ma","Me","J","V","S"][d.getDay()], d:state.days[k]??null};
+  });
+}
+
+// ─── MODALS ──────────────────────────────────────────────────
+function showCraving() {
+  const rows = CRAVING_TIPS.map(t=>`
+    <div class="craving-row">
+      <div class="dot" style="background:var(--green);margin-top:7px"></div>
+      <div style="font-size:14px;color:var(--text)">${t}</div>
+    </div>`).join("");
+  document.getElementById("modal-root").innerHTML = `
+    <div class="overlay" onclick="closeCraving(event)">
+      <div class="modal">
+        <div style="font-size:18px;font-weight:700;margin-bottom:4px;color:var(--text)">L'envie va passer.</div>
+        <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Essaie une de ces alternatives&nbsp;:</div>
+        ${rows}
+        <button class="btn-primary" style="margin-top:20px;margin-bottom:0" onclick="closeCraving()">Fermer</button>
+      </div>
+    </div>`;
+}
+function closeCraving(e) {
+  if (!e || e.target.classList.contains("overlay")) document.getElementById("modal-root").innerHTML="";
+}
+
+// ─── RENDER HELPERS ──────────────────────────────────────────
+function progressFill(pct, over) {
+  const color = over?"var(--red)":pct>80?"var(--amber)":"var(--green)";
+  return `<div class="progress-wrap"><div class="progress-fill" style="width:${pct}%;background:${color}"></div></div>`;
+}
+
+function installBanner() {
+  if (!deferredInstall) return "";
+  return `<div class="install-banner">
+    <p>Installe l'app sur ton téléphone pour un accès rapide.</p>
+    <button onclick="installApp()">Installer</button>
+  </div>`;
+}
+
+function resetSection() {
+  if (!showReset) return `<button class="btn-secondary" style="margin-top:4px;color:var(--red);border-color:var(--red)" onclick="confirmReset()">Réinitialiser les données</button>`;
+  return `<div class="reset-confirm">
+    <p>Supprimer toutes les données ? Cette action est irréversible.</p>
+    <div class="reset-confirm-btns">
+      <button class="btn-cancel" onclick="cancelReset()">Annuler</button>
+      <button class="btn-danger" onclick="doReset()">Supprimer</button>
+    </div>
+  </div>`;
+}
+
+// ─── PAGE: DASHBOARD ─────────────────────────────────────────
+function renderDash() {
+  const td=today(), w=weeksSince(state.startDate), g=getDailyGoal(w);
+  const over=td.cigs>g, pct=g>0?Math.min(100,Math.round((td.cigs/g)*100)):100;
+  const session=getTodaySession(w), streak=getStreak(), money=getMoneySaved();
+  return `<div class="page">
+    ${installBanner()}
+    <div class="grid2">
+      <div class="metric-card">
+        <div class="section-label">Cigarettes</div>
+        <div class="big-num" style="color:${over?"var(--red)":"var(--text)"}">${td.cigs}</div>
+        <div class="small-label">objectif : ${g}/jour</div>
+      </div>
+      <div class="metric-card">
+        <div class="section-label">Streak</div>
+        <div class="big-num">${streak}</div>
+        <div class="small-label">jours sous objectif</div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="metric-card">
+        <div class="section-label">Économisé</div>
+        <div class="big-num" style="font-size:26px">${money}€</div>
+        <div class="small-label">depuis le début</div>
+      </div>
+      <div class="metric-card">
+        <div class="section-label">Sport</div>
+        <div style="font-size:22px;margin:4px 0 2px;font-weight:700;color:${td.sport?"var(--green)":"var(--text)"}">${td.sport?"Fait ✓":"—"}</div>
+        <div class="small-label">${td.sport?"séance faite":session.name}</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-label">Progression tabac — aujourd'hui</div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:13px;color:var(--text2)">${td.cigs} fumée${td.cigs>1?"s":""}</span>
+        <span style="font-size:13px;color:var(--text2)">objectif : ${g}/jour</span>
+      </div>
+      ${progressFill(pct, over)}
+      ${over?`<p style="font-size:12px;color:var(--red-text);margin-top:8px">Objectif dépassé de ${td.cigs-g}. C'est ok — demain on recommence.</p>`:""}
+    </div>
+    <button class="btn-primary" onclick="addCig()">+ J'ai fumé une cigarette</button>
+    <button class="btn-secondary" onclick="showCraving()">J'ai envie de fumer — aide-moi</button>
+    <div class="card">
+      <div class="section-label">Séance du jour — sport</div>
+      <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:4px">${session.name} · ${session.time}</div>
+      <div style="font-size:12px;color:var(--text2)">${session.exercises.map(e=>e.e).join(" · ")}</div>
+    </div>
+    ${resetSection()}
+  </div>`;
+}
+
+// ─── PAGE: CIGARETTES ─────────────────────────────────────────
+function renderClope() {
+  const td=today(), w=weeksSince(state.startDate), g=getDailyGoal(w);
+  const over=td.cigs>g, pct=g>0?Math.min(100,Math.round((td.cigs/g)*100)):100;
+  const last7=getLast7();
+  const badgeCls=over?"badge-red":td.cigs>=g?"badge-amber":"badge-green";
+  const badgeTxt=over?`+${td.cigs-g} au-dessus de l'objectif`:td.cigs===0?"Aucune pour l'instant":`${g-td.cigs} restante${g-td.cigs>1?"s":""}`;
+
+  const bars=last7.map(({k,label,d})=>{
+    const pw=Math.max(0,Math.floor((new Date(k)-new Date(state.startDate))/(7*24*3600*1000)));
+    const pg=getDailyGoal(pw);
+    const c=d?.cigs??null;
+    const h=c===null?4:Math.min(56,Math.max(4,Math.round((c/INIT_DAILY)*56)));
+    const isToday=k===todayKey();
+    const bg=c===null?"var(--bg3)":c>pg?"var(--red)":"var(--green)";
+    return `<div class="bar-col">
+      <div class="bar" style="height:${h}px;background:${bg};opacity:${isToday?1:0.55};outline:${isToday?"2px solid var(--text)":"none"};outline-offset:2px"></div>
+      <div class="bar-label" style="color:${isToday?"var(--text)":"var(--text2)"};font-weight:${isToday?600:400}">${label}</div>
+    </div>`;
+  }).join("");
+
+  const planRows=[0,2,4,6,8,10].map(pw=>{
+    const active=w>=pw&&w<pw+2;
+    return `<div class="tip-row">
+      <span style="font-size:13px;font-weight:${active?600:400};color:${active?"var(--text)":"var(--text2)"}">Semaine ${pw+1}–${pw+2}</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:13px;color:${active?"var(--text)":"var(--text2)"};">${getDailyGoal(pw)}/jour</span>
+        ${active?`<span class="badge badge-green">maintenant</span>`:""}
+      </div>
+    </div>`;
+  }).join("");
+
+  return `<div class="page">
+    <div class="card" style="text-align:center;padding:22px 14px">
+      <div class="section-label">Cigarettes fumées aujourd'hui</div>
+      <div class="big-num" style="font-size:64px;color:${over?"var(--red)":"var(--text)"}">${td.cigs}</div>
+      <div class="small-label" style="margin-bottom:12px">objectif : <strong>${g}</strong> / semaine ${w+1}</div>
+      <span class="badge ${badgeCls}">${badgeTxt}</span>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:10px">
+      <button class="btn-primary" style="margin-bottom:0" onclick="addCig()">+ Fumer</button>
+      <button class="btn-sm" onclick="removeCig()">−</button>
+    </div>
+    <button class="btn-secondary" onclick="showCraving()">J'ai une envie — alternatives</button>
+    <div class="card">
+      <div class="section-label">Progression du jour</div>
+      ${progressFill(pct, over)}
+      <div class="small-label" style="margin-top:8px">${pct}% de l'objectif journalier</div>
+    </div>
+    <div class="card">
+      <div class="section-label">7 derniers jours</div>
+      <div class="bar-chart">${bars}</div>
+    </div>
+    <div class="card" style="background:var(--bg2)">
+      <div class="section-label">Plan de réduction complet</div>
+      ${planRows}
+    </div>
+  </div>`;
+}
+
+// ─── PAGE: SPORT ─────────────────────────────────────────────
+function renderSport() {
+  const td=today(), w=weeksSince(state.startDate);
+  const session=getTodaySession(w), sessions=getSessionsForWeek(w);
+  const phaseLabel=w>=4?"Niveau 3 — Avancé":w>=2?"Niveau 2 — Progression":"Niveau 1 — Débutant";
+
+  const exRows=session.exercises.map(ex=>`
+    <div class="ex-row">
+      <span class="ex-name">${ex.e}</span>
+      <span class="ex-detail">${ex.d}</span>
+    </div>`).join("");
+
+  const allSessions=sessions.map((s,i)=>`
+    <div style="padding:10px 0;border-bottom:${i<sessions.length-1?"0.5px solid var(--border)":"none"}">
+      <div style="display:flex;justify-content:space-between">
+        <span style="font-size:14px;font-weight:600;color:var(--text)">${s.name}</span>
+        <span style="font-size:12px;color:var(--text2)">${s.time}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text2);margin-top:3px">${s.exercises.map(e=>e.e).join(" · ")}</div>
+    </div>`).join("");
+
+  const phases=[
+    {label:"Semaine 1–2",desc:"Marche active + pompes genoux + squats",active:w<2},
+    {label:"Semaine 3–4",desc:"Run/marche intervalles + pompes + fentes",active:w>=2&&w<4},
+    {label:"Semaine 5+", desc:"Jogging continu + tractions + circuit complet",active:w>=4},
+  ].map((p,i)=>`
+    <div class="plan-row">
+      <div class="dot" style="background:${p.active?"var(--green)":"var(--bg3)"}"></div>
+      <div>
+        <div style="font-size:13px;font-weight:${p.active?600:400};color:${p.active?"var(--text)":"var(--text2)"}">${p.label}</div>
+        <div style="font-size:12px;color:var(--text2);margin-top:2px">${p.desc}</div>
+      </div>
+    </div>`).join("");
+
+  return `<div class="page">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <span class="badge badge-green">${phaseLabel}</span>
+      <span style="font-size:12px;color:var(--text2)">Semaine ${w+1}</span>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+        <div>
+          <div class="section-label" style="margin-bottom:2px">Séance du jour</div>
+          <div style="font-size:17px;font-weight:700;color:var(--text)">${session.name}</div>
+          <div style="font-size:13px;color:var(--text2);margin-top:3px">${session.time}</div>
+        </div>
+        ${td.sport?`<span class="badge badge-green">Fait ✓</span>`:""}
+      </div>
+      ${exRows}
+    </div>
+    ${td.sport
+      ?`<div class="done-banner">Bravo ! Séance du jour complétée.</div>`
+      :`<button class="btn-primary" onclick="markSport()">Séance terminée ✓</button>`
+    }
+    <div class="card">
+      <div class="section-label">Toutes les séances disponibles</div>
+      ${allSessions}
+    </div>
+    <div class="card" style="background:var(--bg2)">
+      <div class="section-label">Programme sur 4 semaines</div>
+      ${phases}
+    </div>
+  </div>`;
+}
+
+// ─── MAIN RENDER ─────────────────────────────────────────────
+function render() {
+  document.getElementById("header-date").textContent = fmtDate();
+  const html = currentTab==="dash"?renderDash():currentTab==="clope"?renderClope():renderSport();
+  document.getElementById("page-content").innerHTML = html;
+}
+
+// ─── SERVICE WORKER ──────────────────────────────────────────
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+
+render();
+</script>
+</body>
+</html>
